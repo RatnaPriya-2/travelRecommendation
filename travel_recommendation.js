@@ -15,6 +15,7 @@ const matchedInput = (word) => {
 };
 
 const findResult = () => {
+  resultContainer.innerHTML = "";
   let inputValue = input.value.toLowerCase().trim();
   let finalWord = matchedInput(inputValue);
 
@@ -23,21 +24,29 @@ const findResult = () => {
     .then((data) => {
       let finalResult = [];
       for (let item in data) {
-        if (item.toLowerCase() === finalWord && finalWord === "countries") {
-          finalResult = data[item].map((elem) => elem.cities).flat(1);
-          console.log(finalResult);
-        } else if (
-          item.toLowerCase() === finalWord &&
+        if (
+          item === finalWord &&
           (finalWord === "beaches" || finalWord === "temples")
         ) {
           finalResult = data[item];
+        } else if (item === finalWord && finalWord === "countries") {
+          finalResult = data[item].map((elem) => elem.cities).flat(1);
+        } else {
+          let countryMatch = data.countries.find(
+            (country) => country.name.toLowerCase() === inputValue
+          );
+
+          if (countryMatch) {
+            finalResult = countryMatch.cities;
+          }
         }
       }
 
-      finalResult.forEach((result) => {
-        let searchResult = document.createElement("div");
-        searchResult.className = "search-result";
-        searchResult.innerHTML = `
+      if (finalResult.length > 0) {
+        finalResult.forEach((result) => {
+          let searchResult = document.createElement("div");
+          searchResult.className = "search-result";
+          searchResult.innerHTML = `
             <img src=${result.imageUrl} alt=${result.name} />
             <div class="content">
               <p class="title">${result.name}</p>
@@ -47,8 +56,11 @@ const findResult = () => {
               <button>Visit</button>
             </div>
           `;
-        resultContainer.appendChild(searchResult);
-      });
+          resultContainer.appendChild(searchResult);
+        });
+      } else {
+        resultContainer.innerHTML = `<p style="font-size:20px;margin-left:150px;padding-top:10px">No results found...</p>`;
+      }
     });
 };
 
